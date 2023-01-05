@@ -20,12 +20,13 @@ def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 class Node:
     """class for a Node object"""
     def __init__(self, depth: Optional[int] = None, n_samples: Optional[int] = None, threshold: Optional[float] = None,
-                 MSE_gain: Optional[float] = None, left=None, right=None, side: Optional[str] = None,
-                 *, value: Optional[int] = None) -> None:
+                 accutual_MSE: Optional[float] = None, childs_MSE: Optional[float] = None, left=None, right=None,
+                 side: Optional[str] = None, *, value: Optional[int] = None) -> None:
         self.depth = depth
         self.n_samples = n_samples
         self.threshold = threshold
-        self.MSE_gain = MSE_gain
+        self.accutual_MSE = accutual_MSE
+        self.childs_MSE = childs_MSE
         self.left = left
         self.right = right
         self.side = side
@@ -50,12 +51,12 @@ class DecisionTreeReg:
 
     def _grow_tree(self, x: np.ndarray, y: np.ndarray, depth: int = 0, side: str = 'root') -> Node:
         n_samples = len(x)
-        acctual_MSE = mse(y)
+        actual_MSE = mse(y)
 
         # stopping criteria
         if (
                 depth >= self.max_depth
-                or acctual_MSE <= self.min_MSE
+                or actual_MSE <= self.min_MSE
                 or n_samples < self.min_samples_split
         ):
             leaf_value = np.mean(y)
@@ -64,7 +65,7 @@ class DecisionTreeReg:
             return leaf_node
 
         # greedy search
-        best_thresh, MSE_gain = self._best_criteria(x, y, acctual_MSE)
+        best_thresh, childs_MSE = self._best_criteria(x, y, actual_MSE)
 
         # grow the children from split
         left_idxs, right_idxs = self._split(x, best_thresh)
@@ -73,37 +74,39 @@ class DecisionTreeReg:
         # side = 'right'
         right = self._grow_tree(x[right_idxs], y[right_idxs], depth + 1, side='right')
         if depth == 0:
-            node = Node(depth, n_samples, best_thresh, MSE_gain, left, right, 'root')
+            node = Node(depth, n_samples, best_thresh, actual_MSE, childs_MSE, left, right, 'root')
             self.structure.append(node)
             return node
         else:
-            node = Node(depth, n_samples, best_thresh, MSE_gain, left, right, side)
+            node = Node(depth, n_samples, best_thresh, actual_MSE, childs_MSE, left, right, side)
             self.structure.append(node)
             return node
 
-    def _best_criteria(self, x: np.ndarray, y: np.ndarray, acctual_MSE: float) -> Tuple:
+    def _best_criteria(self, x: np.ndarray, y: np.ndarray, actual_MSE: float) -> Tuple:
         split_thresh = None
         thresholds = np.unique(x)
         for threshold in thresholds:
-            gain_MSE = self._MSE_gain(y, x, threshold)
-            if gain_MSE < acctual_MSE:
-                best_MSE = gain_MSE
+            childs_MSE = self._childs_MSE(y, x, threshold)
+            if childs_MSE < actual_MSE:
+                best_MSE = childs_MSE
                 split_thresh = threshold
 
         return split_thresh, best_MSE
 
-    # TODO
-    def _MSE_gain(self, y: np.ndarray, X_column: np.ndarray, split_thresh: float) -> float:
+    def _childs_MSE(self, y: np.ndarray, X_column: np.ndarray, split_thresh: float) -> float:
         # generate split
         left_idxs, right_idxs = self._split(X_column, split_thresh)
 
-        if len(left_idxs) <= 1 or len(right_idxs) <= 1:
+        if len(left_idxs) == 0 or len(right_idxs) == 0:
             return 0
 
-        # max of child MSE errors
+        # child MSE errors
+        n = len(y)
+        n_l, n_r = len(left_idxs), len(right_idxs)
         mse_l, mse_r = mse(y[left_idxs]), mse(y[right_idxs])
-        max_MSE = max(mse_l, mse_r)
-        return max_MSE
+        childs_MSE = (n_l/n) * (mse_l**2) + (n_r/n) * (mse_r**2)
+
+        return childs_MSE
 
     def _split(self, x: np.ndarray, split_thresh: float) -> Tuple[np.ndarray, ...]:
         left_idxs = np.argwhere(x <= split_thresh).flatten()
@@ -122,19 +125,20 @@ class DecisionTreeReg:
             return self._traverse_tree(x, node.left)
         return self._traverse_tree(x, node.right)
 
-    # TODO
     def export_text(self, feature_names: List[str]) -> None:
         if self.structure:
             for node in self.structure[::-1]:
                 preff = '|   ' * (node.depth - 1) + '|--- '
                 if node.n_samples:
                     if node.depth == 0:
-                        print(f'''Root node: n_samples = {node.n_samples}, 
-            splitting_feature = {feature_names[node.feature]}, 
+                        print(f'''Root node: n_samples = {node.n_samples},
+            actual_MSE = {node.actual_MSE},
+            childs_MSE = {node.childs_MSE},
             splitting_threshold = {node.threshold}''')
                     else:
-                        print(preff + f'''Node {node.side}: n_samples = {node.n_samples}, 
-            splitting_feature = {feature_names[node.feature]}, 
+                        print(preff + f'''Node {node.side}: n_samples = {node.n_samples},
+            actual_MSE = {node.actual_MSE},
+            childs_MSE = {node.childs_MSE},
             splitting_threshold = {node.threshold}''')
                 else:
                     print(preff + f'Leaf node {node.side}: {node.value}')
