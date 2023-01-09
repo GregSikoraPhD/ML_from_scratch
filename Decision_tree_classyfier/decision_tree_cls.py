@@ -130,7 +130,7 @@ class DecisionTreeCls:
         # predict
         return np.array([self._traverse_tree(x, self.root) for x in X])
 
-    def _traverse_tree(self, x: float, node: Node) -> int:
+    def _traverse_tree(self, x: np.ndarray, node: Node) -> int:
         if node.is_leaf_node():
             return node.value
 
