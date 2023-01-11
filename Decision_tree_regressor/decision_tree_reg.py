@@ -20,12 +20,12 @@ def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 class Node:
     """class for a Node object"""
     def __init__(self, depth: Optional[int] = None, n_samples: Optional[int] = None, threshold: Optional[float] = None,
-                 accutual_MSE: Optional[float] = None, childs_MSE: Optional[float] = None, left=None, right=None,
+                 actual_MSE: Optional[float] = None, childs_MSE: Optional[float] = None, left=None, right=None,
                  side: Optional[str] = None, *, value: Optional[int] = None) -> None:
         self.depth = depth
         self.n_samples = n_samples
         self.threshold = threshold
-        self.accutual_MSE = accutual_MSE
+        self.actual_MSE = actual_MSE
         self.childs_MSE = childs_MSE
         self.left = left
         self.right = right
@@ -37,7 +37,7 @@ class Node:
 
 
 class DecisionTreeReg:
-    """class for a decision tree classifier object."""
+    """class for a (only univariate) decision tree regressor object."""
     def __init__(self, min_samples_split: int = 2, min_MSE: float = 1.0, max_depth: int = 100) -> None:
         self.min_samples_split = min_samples_split
         self.min_MSE = min_MSE
@@ -60,7 +60,7 @@ class DecisionTreeReg:
                 or n_samples < self.min_samples_split
         ):
             leaf_value = np.mean(y)
-            leaf_node = Node(depth=depth, side=side, value=leaf_value)
+            leaf_node = Node(depth=depth, n_samples=n_samples, actual_MSE=actual_MSE, side=side, value=leaf_value)
             self.structure.append(leaf_node)
             return leaf_node
 
@@ -85,26 +85,24 @@ class DecisionTreeReg:
     def _best_criteria(self, x: np.ndarray, y: np.ndarray, actual_MSE: float) -> Tuple:
         split_thresh = None
         thresholds = np.unique(x)
-        for threshold in thresholds:
-            childs_MSE = self._childs_MSE(y, x, threshold)
-            if childs_MSE < actual_MSE:
-                best_MSE = childs_MSE
-                split_thresh = threshold
+        childs_MSE_vec = []
+        for threshold in thresholds[:-1]:
+            childs_MSE = self._childs_MSE(x, y, threshold)
+            childs_MSE_vec.append(childs_MSE)
+        best_MSE = min(childs_MSE_vec)
+        split_thresh = thresholds[np.argmin(childs_MSE_vec)]
 
         return split_thresh, best_MSE
 
-    def _childs_MSE(self, y: np.ndarray, X_column: np.ndarray, split_thresh: float) -> float:
+    def _childs_MSE(self, x: np.ndarray, y: np.ndarray, split_thresh: float) -> float:
         # generate split
-        left_idxs, right_idxs = self._split(X_column, split_thresh)
-
-        if len(left_idxs) == 0 or len(right_idxs) == 0:
-            return 0
+        left_idxs, right_idxs = self._split(x, split_thresh)
 
         # child MSE errors
         n = len(y)
         n_l, n_r = len(left_idxs), len(right_idxs)
         mse_l, mse_r = mse(y[left_idxs]), mse(y[right_idxs])
-        childs_MSE = (n_l/n) * (mse_l**2) + (n_r/n) * (mse_r**2)
+        childs_MSE = (n_l/n) * mse_l + (n_r/n) * mse_r
 
         return childs_MSE
 
@@ -125,11 +123,11 @@ class DecisionTreeReg:
             return self._traverse_tree(x, node.left)
         return self._traverse_tree(x, node.right)
 
-    def export_text(self, feature_names: List[str]) -> None:
+    def export_text(self) -> None:
         if self.structure:
             for node in self.structure[::-1]:
                 preff = '|   ' * (node.depth - 1) + '|--- '
-                if node.n_samples:
+                if not node.is_leaf_node():
                     if node.depth == 0:
                         print(f'''Root node: n_samples = {node.n_samples},
             actual_MSE = {node.actual_MSE},
@@ -142,6 +140,3 @@ class DecisionTreeReg:
             splitting_threshold = {node.threshold}''')
                 else:
                     print(preff + f'Leaf node {node.side}: {node.value}')
-
-
-
