@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 from collections import Counter
 from decision_tree_classifier.decision_tree_cls import DecisionTreeCls
-from typing import Optional, Tuple
 from statsmodels.distributions.empirical_distribution import ECDF
+from typing import Optional, Tuple
 
 
 def bootstrap_sample(X: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
