@@ -121,7 +121,7 @@ class DecisionTreeCls:
         ig = parent_entropy - child_entropy
         return ig
 
-    def _split(self, X_column: np.ndarray, split_thresh: float) -> Tuple[np.ndarray, ...]:
+    def _split(self, X_column: np.ndarray, split_thresh: float) -> Tuple[np.ndarray, np.ndarray]:
         left_idxs = np.argwhere(X_column <= split_thresh).flatten()
         right_idxs = np.argwhere(X_column > split_thresh).flatten()
         return left_idxs, right_idxs
