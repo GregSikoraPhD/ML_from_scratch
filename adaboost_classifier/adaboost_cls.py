@@ -1,6 +1,11 @@
 import numpy as np
 
 
+def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """function for model accuracy calculation."""
+    return np.sum(y_true == y_pred) / len(y_true)
+
+
 class DecisionStump:
     """class for a decision stump classifier object."""
     def __init__(self) -> None:
@@ -68,7 +73,6 @@ class AdaboostCls:
 
             self.clss.append(cls)
 
-    @staticmethod
     def predict(self, X: np.ndarray) -> np.ndarray:
         cls_preds = [cls.alpha * cls.predict(X) for cls in self.clss]
         y_pred = np.sum(cls_preds, axis=0)
