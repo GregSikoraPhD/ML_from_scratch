@@ -50,8 +50,8 @@ class AdaboostCls:
                     predictions = np.ones(n_samples)
                     predictions[X_column < threshold] = -1
 
-                    missclassified = w[y != predictions]
-                    error = sum(missclassified)
+                    misclassified = w[y != predictions]
+                    error = sum(misclassified)
 
                     if error > 0.5:
                         error = 1 - error
