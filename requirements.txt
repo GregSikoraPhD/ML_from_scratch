@@ -6,5 +6,6 @@ numpy>=1.23.2
 pandas>=1.4.4
 plotly>=5.11.0
 pltvid>=0.2.2
+rotation-forest>=1.0
 scikit-learn>=0.21
 statsmodels>=0.13.5

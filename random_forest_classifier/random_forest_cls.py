@@ -26,8 +26,8 @@ def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return np.sum(y_true == y_pred) / len(y_true)
 
 
-class RandomForrestCls:
-    """class for a random forrest classifier object."""
+class RandomForestCls:
+    """class for a random forest classifier object."""
     def __init__(self, n_trees: int = 100, min_samples_split: int = 2, max_depth: int = 100,
                  n_feats: Optional[int] = None) -> None:
         self.n_trees = n_trees
