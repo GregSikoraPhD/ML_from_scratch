@@ -21,9 +21,6 @@ def most_common_label(y: np.ndarray) -> int:
     return most_common
 
 
-jupyter
-
-
 class RotationForestCls:
     """class for a random forest classifier object."""
     def __init__(self, n_trees: int = 100, min_samples_split: int = 2, max_depth: int = 100,
