@@ -9,3 +9,4 @@ pltvid>=0.2.2
 rotation-forest>=1.0
 scikit-learn>=0.21
 statsmodels>=0.13.5
+sympy>=1.12
