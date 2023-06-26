@@ -52,7 +52,7 @@ class GradientBoostingRegressor:
               loss_func: Callable[[symbols.Symbol], symbols.Expr]: Callable custom function.
 
           Returns:
-              symbols.Expr:: The symbolic gradient of the custom loss function.
+              Expr:: The symbolic gradient of the custom loss function.
           """
         x, y = symbols('y_pred y')
         return diff(loss_func(y, x), x)
