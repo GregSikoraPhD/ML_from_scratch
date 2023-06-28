@@ -5,6 +5,11 @@ from sympy.core.expr import Expr
 from typing import Callable
 
 
+def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """function for model accuracy calculation."""
+    return np.sum(y_true == y_pred) / len(y_true)
+
+
 class GradientBoostingRegressor:
     """
     Gradient Boosting Regressor using weak learners.
