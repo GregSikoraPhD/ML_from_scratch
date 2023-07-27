@@ -4,5 +4,6 @@ This is a project presenting classical ML algorithms implemented from scratch wi
 3. Random Forrest Classifier
 4. AdaBoost Classifier (binary)
 5. Rotation Tree Classifier
-6. Roatation Forrest Classifier
+6. Rotation Forrest Classifier
 7. Gradient Boosting Regressor
+8. Extreme Gradient Boosting
