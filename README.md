@@ -7,3 +7,5 @@ This is a project presenting classical ML algorithms implemented from scratch wi
 6. Rotation Forrest Classifier
 7. Gradient Boosting Regressor
 8. Extreme Gradient Boosting
+9. Linear regression
+10. General Linear Regression
